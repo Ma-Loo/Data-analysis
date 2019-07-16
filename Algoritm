@@ -1,0 +1,74 @@
+VOS215 = [1, 2, 13, 15, 16, 19, 28, 78]  # list of VOS 215
+ci = list(range(251, 254))
+cd = list(range(256, 272))
+IoT_YOTA = ci + cd  # list of IoT and YOTA
+branch1_input = input("Branch1: ")
+branch2_input = input("Branch2: ")
+branch1 = branch1_input.split(',' or ', ' or ' ,' or ' , ')
+branch2 = branch2_input.split(',' or ', ' or ' ,' or ' , ')
+a = input('1st VOS : ')
+b = input('2nd VOS : ')
+c = a.split(',' or ', ' or ' ,' or ' , ')
+d = b.split(',' or ', ' or ' ,' or ' , ')
+
+
+# functions for VOS215 and IoT_YOTA
+def for_215(x):
+    for z in x:
+        if z == 215:
+            return True
+    return False
+
+
+def search_in_215(x):
+    for y in x:
+        if y in VOS215:
+            return True
+    return False
+
+
+def search_in_YOTA_and_IoT(x):
+    for y in x:
+        if y in IoT_YOTA:
+            return True
+    return False
+
+
+def for_228_and_238(x):
+    for tt in x:
+        if (tt == 228) or (tt == 238):
+            return True
+    return False
+
+
+# Algorithm
+if branch1 == branch2:
+    print('permitted')
+elif (branch1 != branch2) and (not a or not b):
+    print('Not announced')
+elif (len(c) or len(d)) >= 1:
+    VOS1 = [int(i) for i in c]
+    VOS2 = [int(i) for i in d]
+    for i in VOS1:
+        if i in VOS2:
+            print('permitted')
+            break
+        elif (i not in VOS2) and (i in VOS215):
+            if for_215(VOS2):
+                print('permitted')
+            if search_in_YOTA_and_IoT(VOS1) or search_in_YOTA_and_IoT(VOS2) :
+                print('permitted')
+            else:
+                print('denied')
+        elif (i not in VOS2) and (i == 215):
+            if search_in_215(VOS2):
+                print('permitted')
+            else:
+                print('denied')
+        else:
+            if search_in_YOTA_and_IoT(VOS1) or search_in_YOTA_and_IoT(VOS2):
+                print('permitted')
+            elif for_228_and_238(VOS1) and for_228_and_238(VOS2):
+                print('permitted')
+else:
+    print('denied')
