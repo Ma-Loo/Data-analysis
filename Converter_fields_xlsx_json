@@ -1,0 +1,31 @@
+import openpyxl
+import json
+
+wb = openpyxl.load_workbook(filename='./test.xlsx')
+wbs = wb.get_sheet_names()
+sheet = wb.get_sheet_by_name(wbs[0])
+last_row_b = 'B' + str(sheet.max_row)
+last_row_f = 'F' + str(sheet.max_row)
+
+
+# function for searching empty spots in the file
+def search_for_empty_spots(x, y):
+    for i in sheet[x:y]:
+        if i[0].value is None:
+            return False
+
+
+if (search_for_empty_spots('B3', last_row_b) != False) and (search_for_empty_spots('F3', last_row_f) != False):
+    # if there are no an empty spot - the parse
+    vals = []
+    second = []
+    for v in sheet['B3':last_row_b]:
+        vals.append(v[0].value)
+    for i in sheet['F3':last_row_f]:
+        second.append(i[0].value)
+    data = {'init': vals, 'end': second}
+    with open("data_file.json", "w") as f:
+        json.dump(data, f)
+        f.close()
+else:  # else - will not parse
+    raise ValueError("Error: There is an empty spot in the file.\nPlease, exclude the empty spots in the your next try")
