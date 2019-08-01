@@ -1,0 +1,147 @@
+import json
+from typing import List
+
+VOS215 = [1, 2, 13, 15, 16, 19, 28, 78]  # list of VOS 215
+# list of IoT and YOTA
+IoT_YOTA = [251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271]
+
+# functions for excepting: VOS215, IoT_YOTA and 238/228
+def for_215(x):
+    for z in x:
+        if z == 215:
+            return True
+    return False
+
+
+def search_in_215(x):
+    for y in x:
+        if y in VOS215:
+            return True
+    return False
+
+
+def search_in_yota_and_iot(x):
+    for y in x:
+        if y in IoT_YOTA:
+            return True
+    return False
+
+
+def for_228_and_238(x):
+    for tt in x:
+        if (tt == 228) or (tt == 238):
+            return True
+    return False
+
+
+def search_for_denied(x):
+    for i in x:
+        if i == 'denied':
+            yield False
+        if i == 'permitted':
+            yield True
+
+
+#getting the values from json
+with open('file.json', "r") as f:
+    dic = json.load(f)
+branch1 = dic["branch1"]
+branch2 = dic["branch2"]
+VOS_num1: list = dic["set1"]
+VOS_num2: list = dic["set2"]
+#Algorithm
+result = []
+subresult = []
+if len(branch1) == len(branch2):
+    for i in range(len(branch1)):
+        if branch1[i] == branch2[i]:
+            result.append('permitted')
+        elif branch1[i] != branch2[i]:
+            if VOS_num1[i] and VOS_num2[i]:
+                VOS1 = []
+                VOS2 = []
+                if type(VOS_num1[i]) is not list:
+                    VOS1.append(VOS_num1[i])
+                else:
+                    VOS1.extend(VOS_num1[i])
+                if type(VOS_num2[i]) is not list:
+                    VOS2.append(VOS_num2[i])
+                else:
+                    VOS2.extend(VOS_num2[i])
+                if len(VOS1) == 1 and len(VOS2) == 1:
+                    if VOS_num1[i] == VOS_num2[i]:
+                        result.append('permitted')
+                    elif VOS_num1[i] == any(VOS215) and VOS_num2[i] == 215:
+                        result.append('permitted')
+                    elif VOS_num1[i] == any(VOS215) and VOS_num2[i] == 215:
+                        result.append('permitted')
+                    elif (VOS_num1[i] in IoT_YOTA) or (VOS_num2[i] in IoT_YOTA):
+                        result.append('permitted')
+                    elif (VOS_num1[i] == 238 or VOS_num1[i] == 228) and (VOS_num2[i] == 238 or VOS_num2[i] == 228):
+                        result.append('permitted')
+                    else:
+                        result.append('denied')
+                elif len(VOS1) == 1 and len(VOS2)>1:
+                    if VOS_num1[i] in VOS2:
+                        result.append('permitted')
+                    elif VOS_num1[i] == 215 and search_in_215(VOS2):
+                        result.append('permitted')
+                    elif (VOS_num1[i] in VOS215) and for_215(VOS2):
+                        result.append('permitted')
+                    elif (VOS_num1[i] == 228 or VOS_num1[i] == 238) and for_228_and_238(VOS2):
+                        result.append('permitted')
+                    elif (VOS_num1[i] in IoT_YOTA) or search_in_yota_and_iot(VOS2):
+                        result.append('permitted')
+                    else:
+                        result.append('denied')
+                elif len(VOS2) == 1 and len(VOS1)>1:
+                    if VOS_num2[i] in VOS1:
+                        result.append('permitted')
+                    elif VOS_num2[i] == 215 and search_in_215(VOS1):
+                        result.append('permitted')
+                    elif (VOS_num2[i] in VOS215) and for_215(VOS1):
+                        result.append('permitted')
+                    elif (VOS_num2[i] == 228 or VOS_num2[i] == 238) and for_228_and_238(VOS1):
+                        result.append('permitted')
+                    elif (VOS_num2[i] in IoT_YOTA) or search_in_yota_and_iot(VOS1):
+                        result.append('permitted')
+                    else:
+                        result.append('denied')
+                elif len(VOS1)>1 and len(VOS2)>1:
+                    for v in VOS1:
+                        if v in VOS2:
+                            subresult.append('permitted')
+                            break
+                        elif (v not in VOS2) and (v in VOS215):
+                            if for_215(VOS2):
+                                subresult.append('permitted')
+                            elif search_in_yota_and_iot(VOS2):
+                                subresult.append('permitted')
+                            else:
+                                subresult.append('denied')
+                        elif (v not in VOS2) and (v == 215):
+                            if search_in_215(VOS2):
+                                subresult.append('permitted')
+                            elif search_in_yota_and_iot(VOS2):
+                                subresult.append('permitted')
+                            else:
+                                subresult.append('denied')
+                        else:
+                            if search_in_yota_and_iot(VOS1) or search_in_yota_and_iot(VOS2):
+                                subresult.append('permitted')
+                            elif for_228_and_238(VOS1) and for_228_and_238(VOS2):
+                                subresult.append('permitted')
+                            else:
+                                subresult.append('denied')
+                    if 'permitted' in subresult:
+                        result.append('permitted')
+                    else:
+                        result.append('denied')
+        else:
+            result.append('denied')
+    if all(list(search_for_denied(result))):
+        print('permitted')
+    else:
+        print('denied')
+else:
+    raise ValueError('There are not enough subnets in a column')
