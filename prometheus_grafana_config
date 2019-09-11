@@ -1,0 +1,70 @@
+version: '2.1'
+services:
+    prometheus:
+        image: prom/prometheus:v2.12.0
+        container_name: prometheus
+        command:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--web.console.libraries=/etc/prometheus/console_libraries'
+          - '--web.console.templates=/etc/prometheus/consoles'
+          - '--storage.tsdb.retention.time=200h'
+          - '--web.enable-lifecycle'
+        network_mode: host
+        expose:
+          - 9090
+    nodeexporter:
+        image: prom/node-exporter:v0.18.1
+        container_name: nodeexporter
+        volumes:
+          - /proc:/host/proc:ro
+          - /sys:/host/sys:ro
+          - /:/rootfs:ro
+        command:
+          - '--path.procfs=/host/proc'
+          - '--path.rootfs=/rootfs'
+          - '--path.sysfs=/host/sys'
+          - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+        network_mode: host
+        expose:
+          - 9100
+    grafana:
+        image: grafana/grafana:6.3.5
+        container_name: grafana
+        depends_on:
+          - prometheus
+        environment:
+          - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+          - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+          - GF_USERS_ALLOW_SIGN_UP=false
+        network_mode: host
+        expose:
+          - 3000
+    alertmanager:
+        image: prom/alertmanager:v0.19.0
+        container_name: alertmanager
+        volumes:
+          - ./alertmanager/:/etc/alertmanager/
+        command:
+          - '--config.file=/etc/alertmanager/config.yml'
+          - '--storage.path=/alertmanager'
+        expose:
+          - 9093
+        network_mode: host
+    cadvisor:
+        image: google/cadvisor:v0.33.0
+        container_name: cadvisor
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:rw
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+        expose:
+          - 8080
+        network_mode: host
+    pushgateway:
+        image: prom/pushgateway:v0.9.1
+        container_name: pushgateway
+        expose:
+          - 9091
+        network_mode: host
