@@ -44,7 +44,7 @@ for p in  persons:
     gen.expect('Address')
     gen.sendline(pochta)
     gen.expect('challenge password')
-    gen.sendline('963258741AaA#!')
+    gen.sendline('strong_password')
     gen.expect('company name')
     gen.sendline('Company')
     gen.expect('the certificate')
