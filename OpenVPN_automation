@@ -1,0 +1,67 @@
+# Script will get number of clients to create list, then their city and names.
+# After it'll be iterating them and create certificates, keys, and passwords
+
+import pexpect
+import os
+import random
+
+# Generator for the list of names
+def genList(x):
+    for i in range(x):
+        i = input()
+        yield i
+
+
+print('Please, enter a number of the persons: ')
+num = int(input())
+print('Please, enter a city: ')
+city = input()
+print("Please, enter their names: ")
+persons = list(genList(num))
+
+# Chars for the password generator
+chars = '+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+
+# the iteration for every object in generated list
+for p in  persons:
+    pochta = p[0:-2].lower() + '@domain.ru'
+    com = './build-key ' + p
+    gen = pexpect.spawn(com)
+    gen.expect('RU')
+    gen.sendline('RU')
+    gen.expect('full name')
+    gen.sendline(city)
+    gen.expect('eg, city')
+    gen.sendline(city)
+    gen.expect('eg, company')
+    gen.sendline('Company')
+    gen.expect('eg, section')
+    gen.sendline('Company')
+    gen.expect('eg, your name or your server')
+    gen.sendline(p)
+    gen.expect('EasyRSA')
+    gen.sendline('EasyRSA')
+    gen.expect('Address')
+    gen.sendline(pochta)
+    gen.expect('challenge password')
+    gen.sendline('963258741AaA#!')
+    gen.expect('company name')
+    gen.sendline('Company')
+    gen.expect('the certificate')
+    gen.sendline('y')
+    gen.expect('certificate requests certified')
+    gen.sendline('y')
+    password = ''
+# Password generating;
+    for n in range(12):
+        password += random.choice(chars)
+    comPass1 = 'echo "'
+    comPass2 = '" >> /path/user.pass'
+    comPass = comPass1 + p + ':' +  password + comPass2
+    os.system(comPass)
+# Moving new keys and crts to the upload directory    
+    cp1 = 'cp /path/' + p +'.crt /path/'
+    cp2 = 'cp /path/' + p +'.key /path/'
+    os.system(cp1)
+    os.system(cp2) 
+    print('Password for ' + p + ': ' + password)
