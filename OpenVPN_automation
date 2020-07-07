@@ -5,19 +5,12 @@ import pexpect
 import os
 import random
 
-# Generator for the list of names
-def genList(x):
-    for i in range(x):
-        i = input()
-        yield i
-
-
 print('Please, enter a number of the persons: ')
 num = int(input())
 print('Please, enter a city: ')
 city = input()
 print("Please, enter their names: ")
-persons = list(genList(num))
+persons = list(input() for i in range(num))
 
 # Chars for the password generator
 chars = '+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
